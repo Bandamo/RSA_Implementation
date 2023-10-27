@@ -1,69 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <random>
-#include <ctime>
-#include <cstdint>
-#include <string>
-#include <chrono>
-#include <thread>
-
-#define u64 uint64_t
-
-struct public_key{
-	u64 n;
-	u64 e;
-};
-
-struct key_pair{
-	public_key public_k;
-	u64 private_k;
-};
-
-void progressbar(u64 n, u64 nmax){
-	// Print the progress bar
-	std::cout << "[" << n << "/" << nmax << "] " << 100*n/nmax << "%" << std::endl;
-}
-
-u64 pow(u64 a, u64 b){
-	// Find the power of a number
-	u64 result = 1;
-	for (int i=0; i<b; i++){
-		result = result*a;
-	}
-	return result;
-}
-
-u64 gcd(u64 a, u64 b){
-	// Find the greatest common divisor of two numbers
-	int r = 0;
-	while (b != 0){
-		r = a % b;
-		a = b;
-		b = r;
-	}
-	return a;
-}
-
-u64 lcm(u64 a, u64 b){
-	// Find the least common multiple of two numbers
-	return (a*b)/gcd(a,b);
-}
-
-uint64_t modexp(uint64_t k, int m, uint64_t n){
-	// Find the modular exponentiation of k^m mod n
-	uint64_t result = 1;
-	for (int i=0; i<m; i++){
-		result = (result*k) % n;
-	}
-	return result;
-}
-
-struct prime_dec
-{
-	u64 number;
-	u64 power;
-};
+#include "main.h"
 
 std::vector<u64> load_prime(){
 	// Load prime number in prime.txt
@@ -81,7 +16,47 @@ std::vector<u64> load_prime(){
 	return primes;
 }
 
-u64 carmichael(uint64_t n) {
+struct prime_dec
+{
+	u64 number;
+	u64 power;
+};
+
+RSA::RSA(){
+    // Constructor
+}
+
+RSA::~RSA(){
+    // Destructor
+}
+
+
+u64 RSA::lcm(u64 a, u64 b){
+    // Find the least common multiple of two numbers
+    return (a*b)/gcd(a,b);
+}
+
+u64 RSA::gcd(u64 a, u64 b){
+	// Find the greatest common divisor of two numbers
+	int r = 0;
+	while (b != 0){
+		r = a % b;
+		a = b;
+		b = r;
+	}
+	return a;
+}
+
+uint64_t RSA::modexp(uint64_t k, int m, uint64_t n){
+	// Find the modular exponentiation of k^m mod n
+	uint64_t result = 1;
+	for (int i=0; i<m; i++){
+		result = (result*k) % n;
+	}
+	return result;
+}
+
+u64 RSA::carmichael(uint64_t n) {
 	// Get prime decomposition
 	//std::cout << "-> Prime decomposition :"<<std::endl;
 	std::vector<u64> primes = load_prime();
@@ -155,11 +130,11 @@ int random_primary(int n){
 	return number;
 }
 
-key_pair key_pair_generation(){
+key_pair RSA::key_pair_generation(){
 	std::cout << "-> Prime number generation :"<<std::endl;
 	u64 p,q;
 	srand(time(NULL));
-	u64 max = 42949000;
+	u64 max = 429490;
 	p = random_primary(rand()%max);
 	q = random_primary(rand()%max);
 	std::cout << "p = " << p << std::endl;
@@ -197,31 +172,10 @@ key_pair key_pair_generation(){
 
 }
 
-u64 RSA_encrypt(u64 m, public_key k){
+u64 RSA::RSA_encrypt(u64 m, public_key k){
 	return modexp(m,k.e,k.n);
 }
 
-u64 RSA_decrypt(u64 c, key_pair k){
+u64 RSA::RSA_decrypt(u64 c, key_pair k){
 	return modexp(c,k.private_k,k.public_k.n);
-}
-
-int main(){
-	std::cout << "KEY GENERATION"<<std::endl;
-	key_pair keys = key_pair_generation();
-	
-	std::cout << "ENCRYPTION"<<std::endl;
-	std::cout << "-> Message :"<<std::endl;
-	u64 m = 524684;
-	std::cout << m << std::endl;
-	std::cout << "-> Encryption :"<<std::endl;
-	u64 c = RSA_encrypt(m,keys.public_k);
-	std::cout << c << std::endl;
-
-	std::cout << "DECRYPTION"<<std::endl;
-	std::cout << "-> Decryption :"<<std::endl;
-	u64 m2 = RSA_decrypt(c,keys);
-	std::cout << m2 << std::endl;
-
-
-	return 0;
 }
